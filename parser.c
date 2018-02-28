@@ -69,6 +69,18 @@ void parse_file ( char * filename,
   while ( fgets(line, 255, f) != NULL ) {
     line[strlen(line)-1]='\0';
     printf(":%s:\n",line);
+
+
+    if (!strcmp(line,"line")) {
+      fgets(line,255,f);
+      line[strlen(line)-1]='\0';
+
+    } else if (!strcmp(line,"ident")) {
+
+    }
+
+
+    
   }
 }
   
