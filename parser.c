@@ -11,47 +11,47 @@
 
 
 /*======== void parse_file () ==========
-Inputs:   char * filename 
-          struct matrix * transform, 
-          struct matrix * pm,
-          screen s
-Returns: 
+  Inputs:   char * filename 
+  struct matrix * transform, 
+  struct matrix * pm,
+  screen s
+  Returns: 
 
-Goes through the file named filename and performs all of the actions listed in that file.
-The file follows the following format:
-     Every command is a single character that takes up a line
-     Any command that requires arguments must have those arguments in the second line.
-     The commands are as follows:
-         line: add a line to the edge matrix - 
-	    takes 6 arguemnts (x0, y0, z0, x1, y1, z1)
-	 ident: set the transform matrix to the identity matrix - 
-	 scale: create a scale matrix, 
-	    then multiply the transform matrix by the scale matrix - 
-	    takes 3 arguments (sx, sy, sz)
-	 move: create a translation matrix, 
-	    then multiply the transform matrix by the translation matrix - 
-	    takes 3 arguments (tx, ty, tz)
-	 rotate: create an rotation matrix,
-	    then multiply the transform matrix by the rotation matrix -
-	    takes 2 arguments (axis, theta) axis should be x y or z
-	 apply: apply the current transformation matrix to the 
-	    edge matrix
-	 display: draw the lines of the edge matrix to the screen
-	    display the screen
-	 save: draw the lines of the edge matrix to the screen
-	    save the screen to a file -
-	    takes 1 argument (file name)
-	 quit: end parsing
+  Goes through the file named filename and performs all of the actions listed in that file.
+  The file follows the following format:
+  Every command is a single character that takes up a line
+  Any command that requires arguments must have those arguments in the second line.
+  The commands are as follows:
+  line: add a line to the edge matrix - 
+  takes 6 arguemnts (x0, y0, z0, x1, y1, z1)
+  ident: set the transform matrix to the identity matrix - 
+  scale: create a scale matrix, 
+  then multiply the transform matrix by the scale matrix - 
+  takes 3 arguments (sx, sy, sz)
+  move: create a translation matrix, 
+  then multiply the transform matrix by the translation matrix - 
+  takes 3 arguments (tx, ty, tz)
+  rotate: create an rotation matrix,
+  then multiply the transform matrix by the rotation matrix -
+  takes 2 arguments (axis, theta) axis should be x y or z
+  apply: apply the current transformation matrix to the 
+  edge matrix
+  display: draw the lines of the edge matrix to the screen
+  display the screen
+  save: draw the lines of the edge matrix to the screen
+  save the screen to a file -
+  takes 1 argument (file name)
+  quit: end parsing
 
-See the file script for an example of the file format
+  See the file script for an example of the file format
 
 
-IMPORTANT MATH NOTE:
-the trig functions int math.h use radian mesure, but us normal
-humans use degrees, so the file will contain degrees for rotations,
-be sure to conver those degrees to radians (M_PI is the constant
-for PI)
-====================*/
+  IMPORTANT MATH NOTE:
+  the trig functions int math.h use radian mesure, but us normal
+  humans use degrees, so the file will contain degrees for rotations,
+  be sure to conver those degrees to radians (M_PI is the constant
+  for PI)
+  ====================*/
 void parse_file ( char * filename, 
                   struct matrix * transform, 
                   struct matrix * edges,
@@ -82,8 +82,10 @@ void parse_file ( char * filename,
       double y1=0;
       double z1=0;
       if (line[strlen(line)-1]=='\n') line[strlen(line)-1]='\0';
-      sscanf(line,"%lf %lf %lf %lf %lf %lf",&x0,&y0,&z0,&x1,&y1,&z1);
-      add_edge(edges,x0,y0,z0,x1,y1,z1);
+      if (sscanf(line,"%lf %lf %lf %lf %lf %lf",&x0,&y0,&z0,&x1,&y1,&z1)==6)
+	add_edge(edges,x0,y0,z0,x1,y1,z1);
+      else
+	printf("improver input for line call\n");
 
     } else if (!strcmp(line,"ident")) {
       ident(transform);
@@ -93,27 +95,34 @@ void parse_file ( char * filename,
       double sx=0;
       double sy=0;
       double sz=0;
-      sscanf(line,"%lf %lf %lf",&sx,&sy,&sz);
-      temp = make_scale(sx,sy,sz);
-      matrix_mult(temp,transform);
-      free_matrix(temp);
-
+      if (sscanf(line,"%lf %lf %lf",&sx,&sy,&sz)==3) {
+	temp = make_scale(sx,sy,sz);
+	matrix_mult(temp,transform);
+	free_matrix(temp);
+      }
+      else
+	printf("improper input\n");
     } else if (!strcmp(line,"move")) {
       fgets(line,255,f);
       if (line[strlen(line)-1]=='\n') line[strlen(line)-1]='\0';      
       double tx=0;
       double ty=0;
       double tz=0;
-      sscanf(line,"%lf %lf %lf",&tx,&ty,&tz);
+      if (sscanf(line,"%lf %lf %lf",&tx,&ty,&tz)==3) {
       temp=make_translate(tx,ty,tz);
       matrix_mult(temp,transform);
       free_matrix(temp);
+      }
+      else
+	printf("improper input\n");
     } else if (!strcmp(line,"rotate")) {
       fgets(line,255,f);
       if (line[strlen(line)-1]=='\n') line[strlen(line)-1]='\0';      
       char axis[2];
       double theta;
-      sscanf(line,"%s %lf",axis,&theta);
+      if (sscanf(line,"%s %lf",axis,&theta)!=2)
+	printf("inproper input\n");
+      else {
       if (axis[0]=='x') {
 	temp=make_rotX(theta);
       }
@@ -125,6 +134,7 @@ void parse_file ( char * filename,
       }
       matrix_mult(temp,transform);
       free_matrix(temp);
+      }
     } else if (!strcmp(line,"apply")) {
       matrix_mult(transform,edges);
     } else if (!strcmp(line,"display")) {
